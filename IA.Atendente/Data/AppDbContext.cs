@@ -24,6 +24,10 @@ public class AppDbContext : DbContext
             entity.HasKey(t => t.Id);
             entity.Property(t => t.NomeClinica).IsRequired().HasMaxLength(150);
             entity.Property(t => t.Documento).HasMaxLength(20);
+
+            // Mapeamento das novas propriedades de localização e horário
+            entity.Property(t => t.Endereco).HasMaxLength(250);
+            entity.Property(t => t.HorarioFuncionamento).HasMaxLength(150);
         });
 
         modelBuilder.Entity<AiConfiguration>(entity =>

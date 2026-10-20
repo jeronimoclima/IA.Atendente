@@ -1,5 +1,4 @@
-﻿// Services/OpenAiService.cs
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using IA.Atendente.Api.Data;
@@ -53,14 +52,18 @@ public class OpenAiService
             sbServicos.AppendLine($"- {servico.Descricao}: R$ {servico.Preco} (Duração: {servico.Duracao} min)");
         }
 
-        // 4. Construir o System Prompt dinâmico combinando o prompt do banco + catálogo de serviços
+        // 4. Construir o System Prompt dinâmico combinando o prompt + dados da clínica + serviços
         var systemPromptCompleto = $"""
         {tenant.AiConfiguration.SystemPrompt}
+        
+        INFORMAÇÕES GERAIS DA CLÍNICA:
+        - Endereço / Localização: {tenant.Endereco}
+        - Horário de Atendimento: {tenant.HorarioFuncionamento}
         
         CATÁLOGO DE SERVIÇOS DISPONÍVEIS NESTA CLÍNICA:
         {sbServicos.ToString()}
         
-        Regra: Responda sempre de forma cordial, humanizada e objetiva, focando em tirar dúvidas e realizar agendamentos com base nos serviços acima.
+        Regra: Responda sempre de forma cordial, humanizada e objetiva, focando em tirar dúvidas, informar o endereço, horários e realizar agendamentos com base nas informações acima.
         """;
 
         // 5. Montar o histórico de mensagens para enviar à OpenAI
@@ -69,8 +72,13 @@ public class OpenAiService
             new { role = "system", content = systemPromptCompleto }
         };
 
-        // Adicionar histórico anterior para manter o contexto da conversa
-        foreach (var msg in sessao.Mensagens.OrderBy(m => m.CriadoEm))
+        // Adicionar histórico anterior para manter o contexto da conversa (limitado às últimas 20)
+        var ultimasMensagens = sessao.Mensagens
+            .OrderByDescending(m => m.CriadoEm)
+            .Take(20)
+            .OrderBy(m => m.CriadoEm);
+
+        foreach (var msg in ultimasMensagens)
         {
             messagesList.Add(new { role = msg.Role, content = msg.Conteudo });
         }
@@ -110,7 +118,7 @@ public class OpenAiService
             .GetProperty("content")
             .GetString() ?? "Desculpe, não consegui gerar uma resposta.";
 
-        // 7. Salvar a resposta da IA no banco (Usando 'Conteudo' com C maiúsculo)
+        // 7. Salvar a resposta da IA no banco
         sessao.Mensagens.Add(new Domain.Mensagem { Role = "assistant", Conteudo = respostaIa });
         await _context.SaveChangesAsync();
 

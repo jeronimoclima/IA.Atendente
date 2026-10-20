@@ -1,5 +1,4 @@
-﻿// Controllers/ClinicaController.cs
-using IA.Atendente.Api.Data;
+﻿using IA.Atendente.Api.Data;
 using IA.Atendente.Api.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,10 +16,12 @@ public class ClinicaController : ControllerBase
         _context = context;
     }
 
-    // DTO para cadastro completo da clínica com prompt e serviços iniciais
+    // DTO atualizado com Endereço e HorarioFuncionamento
     public record CriarClinicaDto(
         string NomeClinica,
         string Documento,
+        string Endereco,
+        string HorarioFuncionamento,
         string SystemPrompt,
         string ModeloIa,
         decimal Temperatura
@@ -33,6 +34,8 @@ public class ClinicaController : ControllerBase
         {
             NomeClinica = dto.NomeClinica,
             Documento = dto.Documento,
+            Endereco = dto.Endereco,
+            HorarioFuncionamento = dto.HorarioFuncionamento,
             AiConfiguration = new AiConfiguration
             {
                 SystemPrompt = dto.SystemPrompt,
