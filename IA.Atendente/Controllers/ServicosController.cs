@@ -1,5 +1,4 @@
-﻿// Controllers/ServicosController.cs
-using IA.Atendente.Api.Data;
+﻿using IA.Atendente.Api.Data;
 using IA.Atendente.Api.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,12 +16,14 @@ public class ServicosController : ControllerBase
         _context = context;
     }
 
-    // DTO para criação de serviço
+    // DTO atualizado para aceitar o tipo de cobrança e quantidade de sessões
     public record CriarServicoDto(
         Guid TenantId,
         string Nome,
         decimal Preco,
-        int DuracaoMinutos
+        int DuracaoMinutos,
+        TipoCobranca TipoCobranca = TipoCobranca.PorMinutos,
+        int QuantidadeSessoes = 1
     );
 
     [HttpPost]
@@ -37,7 +38,9 @@ public class ServicosController : ControllerBase
             TenantId = dto.TenantId,
             Descricao = dto.Nome,
             Preco = dto.Preco,
-            Duracao = dto.DuracaoMinutos
+            DuracaoMinutos = dto.DuracaoMinutos,
+            TipoCobranca = dto.TipoCobranca,
+            QuantidadeSessoes = dto.TipoCobranca == TipoCobranca.PorSessao ? dto.QuantidadeSessoes : 1
         };
 
         _context.Servicos.Add(servico);

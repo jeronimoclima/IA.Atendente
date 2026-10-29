@@ -22,6 +22,56 @@ namespace IA.Atendente.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("IA.Atendente.Api.Domain.Agendamento", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataHoraFim")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DataHoraInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IdentificadorCliente")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NomeCliente")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ProfissionalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ServicoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProfissionalId");
+
+                    b.HasIndex("ServicoId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Agendamentos");
+                });
+
             modelBuilder.Entity("IA.Atendente.Api.Domain.AiConfiguration", b =>
                 {
                     b.Property<Guid>("Id")
@@ -79,6 +129,32 @@ namespace IA.Atendente.Migrations
                     b.ToTable("Mensagens");
                 });
 
+            modelBuilder.Entity("IA.Atendente.Api.Domain.Profissional", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Especialidade")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("Profissionais");
+                });
+
             modelBuilder.Entity("IA.Atendente.Api.Domain.Servico", b =>
                 {
                     b.Property<Guid>("Id")
@@ -90,14 +166,20 @@ namespace IA.Atendente.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("Duracao")
+                    b.Property<int>("DuracaoMinutos")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Preco")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("QuantidadeSessoes")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TipoCobranca")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -164,6 +246,33 @@ namespace IA.Atendente.Migrations
                     b.ToTable("Tenants");
                 });
 
+            modelBuilder.Entity("IA.Atendente.Api.Domain.Agendamento", b =>
+                {
+                    b.HasOne("IA.Atendente.Api.Domain.Profissional", "Profissional")
+                        .WithMany("Agendamentos")
+                        .HasForeignKey("ProfissionalId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("IA.Atendente.Api.Domain.Servico", "Servico")
+                        .WithMany()
+                        .HasForeignKey("ServicoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("IA.Atendente.Api.Domain.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Profissional");
+
+                    b.Navigation("Servico");
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("IA.Atendente.Api.Domain.AiConfiguration", b =>
                 {
                     b.HasOne("IA.Atendente.Api.Domain.Tenant", "Tenant")
@@ -186,6 +295,17 @@ namespace IA.Atendente.Migrations
                     b.Navigation("SessaoAtendimento");
                 });
 
+            modelBuilder.Entity("IA.Atendente.Api.Domain.Profissional", b =>
+                {
+                    b.HasOne("IA.Atendente.Api.Domain.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("IA.Atendente.Api.Domain.Servico", b =>
                 {
                     b.HasOne("IA.Atendente.Api.Domain.Tenant", "Tenant")
@@ -206,6 +326,11 @@ namespace IA.Atendente.Migrations
                         .IsRequired();
 
                     b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("IA.Atendente.Api.Domain.Profissional", b =>
+                {
+                    b.Navigation("Agendamentos");
                 });
 
             modelBuilder.Entity("IA.Atendente.Api.Domain.SessaoAtendimento", b =>
