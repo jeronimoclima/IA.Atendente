@@ -12,6 +12,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<AgendamentoService>();
 builder.Services.AddScoped<OpenAiService>();
 builder.Services.AddHttpClient<OpenAiService>();
+// Adicione junto aos outros serviços
+builder.Services.AddScoped<WhatsAppService>();
+builder.Services.AddHttpClient<WhatsAppService>();
 
 // Configuração dos Controllers e tratamento de ciclos JSON
 builder.Services.AddControllers()
